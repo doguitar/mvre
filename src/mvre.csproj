@@ -10,7 +10,7 @@
     <RootNamespace>mvre</RootNamespace>
     <AssemblyName>mvre</AssemblyName>
 
-    <Version>1.0.0</Version>
+    <Version>1.0.3</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
 
