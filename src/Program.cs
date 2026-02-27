@@ -99,11 +99,16 @@ if (matchPattern is null || renamePattern is null)
     return 1;
 }
 
-if (noClobber && overwriteMode is not null)
+if (verbose)
 {
-    Console.Error.WriteLine("Cannot use both --no-clobber/-n and --overwrite-mode/-o.");
-    return 1;
+    Console.WriteLine($"Pattern: {matchPattern}");
 }
+
+if (noClobber && overwriteMode is not null)
+    {
+        Console.Error.WriteLine("Cannot use both --no-clobber/-n and --overwrite-mode/-o.");
+        return 1;
+    }
 
 if (filesOnlySpecified && directoriesOnlySpecified)
 {
@@ -186,7 +191,7 @@ foreach (var fromPath in candidates)
     if (!match.Success)
     {
         if (verbose)
-            Console.WriteLine($"{rel}: pattern did not match");
+            Console.WriteLine($"{relNormalized}: pattern did not match");
         continue;
     }
 
