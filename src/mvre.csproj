@@ -24,6 +24,5 @@
     <StripSymbols>true</StripSymbols>
     <DebugType>none</DebugType>
   </PropertyGroup>
-  </PropertyGroup>
 
 </Project>
