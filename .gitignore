@@ -1,0 +1,22 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+
+## Rider / JetBrains
+.idea/
+
+## VS Code
+.vscode/
+
+## OS files
+Thumbs.db
+Desktop.ini
+
+## Build outputs
+**/bin/
+**/obj/
+
+## Publish outputs (optional to ignore; keep repo clean)
+**/publish/
+
