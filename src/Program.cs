@@ -11,6 +11,7 @@ bool createParents = false;
 bool noClobber = false;
 string? overwriteMode = null;
 bool verbose = false;
+bool dryRun = false;
 
 string? matchPattern = null;
 string? renamePattern = null;
@@ -74,6 +75,9 @@ for (int i = 0; i < args.Length; i++)
             break;
         case "--verbose" or "-v":
             verbose = true;
+            break;
+        case "--dry-run":
+            dryRun = true;
             break;
         default:
             if (args[i].StartsWith('-'))
@@ -308,14 +312,15 @@ foreach (int i in moveOrder)
                 return 1;
             }
 
-            if (createParents)
+            if (createParents && !dryRun)
             {
                 var parent = Path.GetDirectoryName(toPath);
                 if (!string.IsNullOrWhiteSpace(parent))
                     Directory.CreateDirectory(parent);
             }
 
-            Directory.Move(fromPath, toPath);
+            if (!dryRun)
+                Directory.Move(fromPath, toPath);
             Console.WriteLine($"{fromRel} -> {toRel}");
             continue;
         }
@@ -332,7 +337,7 @@ foreach (int i in moveOrder)
             return 1;
         }
 
-        if (createParents)
+        if (createParents && !dryRun)
         {
             var parent = Path.GetDirectoryName(toPath);
             if (!string.IsNullOrWhiteSpace(parent))
@@ -342,7 +347,8 @@ foreach (int i in moveOrder)
         bool targetExists = File.Exists(toPath);
         if (!targetExists)
         {
-            File.Move(fromPath, toPath);
+            if (!dryRun)
+                File.Move(fromPath, toPath);
             Console.WriteLine($"{fromRel} -> {toRel}");
             continue;
         }
@@ -377,7 +383,8 @@ foreach (int i in moveOrder)
             continue;
         }
 
-        File.Move(fromPath, toPath, overwrite: true);
+        if (!dryRun)
+            File.Move(fromPath, toPath, overwrite: true);
         Console.WriteLine($"{fromRel} -> {toRel}");
     }
     catch (Exception ex)
@@ -411,6 +418,7 @@ static void ShowHelp()
     stdout.WriteLine("  -d, --directories-only         Apply only to directories.");
     stdout.WriteLine("  -p, --create-parents           Create parent directories in the target if they do not exist.");
     stdout.WriteLine("  -v, --verbose                  Print a line for every file found; if not moved, show the reason.");
+    stdout.WriteLine("      --dry-run                  Do not move or create anything; only report what would be done.");
     stdout.WriteLine("  -h, --help                     Show this help.");
     stdout.WriteLine();
     stdout.WriteLine("EXAMPLES");
