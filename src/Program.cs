@@ -10,6 +10,7 @@ bool createParents = false;
 
 bool noClobber = false;
 string? overwriteMode = null;
+bool verbose = false;
 
 string? matchPattern = null;
 string? renamePattern = null;
@@ -70,6 +71,9 @@ for (int i = 0; i < args.Length; i++)
             break;
         case "--create-parents" or "-p":
             createParents = true;
+            break;
+        case "--verbose" or "-v":
+            verbose = true;
             break;
         default:
             if (args[i].StartsWith('-'))
@@ -176,7 +180,11 @@ foreach (var fromPath in candidates)
 
     var match = regex.Match(relNormalized);
     if (!match.Success)
+    {
+        if (verbose)
+            Console.WriteLine($"{rel}: pattern did not match");
         continue;
+    }
 
     string toRelNormalized;
     try
@@ -190,7 +198,11 @@ foreach (var fromPath in candidates)
     }
 
     if (string.IsNullOrWhiteSpace(toRelNormalized))
+    {
+        if (verbose)
+            Console.WriteLine($"{rel}: replacement is empty");
         continue;
+    }
 
     string toRel = DenormalizeRelativePath(toRelNormalized);
     if (Path.IsPathRooted(toRel))
@@ -207,7 +219,11 @@ foreach (var fromPath in candidates)
     }
 
     if (PathsEqual(fromFullPath, toFullPath))
+    {
+        if (verbose)
+            Console.WriteLine($"{rel}: source and target are the same");
         continue;
+    }
 
     bool isDir = directoriesOnly;
     if (isDir && IsUnderDirectory(toFullPath, fromFullPath))
@@ -256,6 +272,11 @@ if (duplicateGroups.Count > 0)
                 indicesToDrop.Add(t.Index);
         }
     }
+    if (verbose)
+    {
+        foreach (var t in movesWithIndex.Where(t => indicesToDrop.Contains(t.Index)))
+            Console.WriteLine($"{t.Move.FromRel}: not moved (another source was chosen for same destination)");
+    }
     moves = movesWithIndex.Where(t => !indicesToDrop.Contains(t.Index)).Select(t => t.Move).ToList();
 }
 
@@ -277,7 +298,11 @@ foreach (int i in moveOrder)
             if (File.Exists(toPath) || Directory.Exists(toPath))
             {
                 if (noClobber)
+                {
+                    if (verbose)
+                        Console.WriteLine($"{fromRel}: not moved (target exists, no-clobber)");
                     continue;
+                }
 
                 Console.Error.WriteLine($"Target already exists: {toPath}");
                 return 1;
@@ -323,7 +348,11 @@ foreach (int i in moveOrder)
         }
 
         if (noClobber)
+        {
+            if (verbose)
+                Console.WriteLine($"{fromRel}: not moved (target exists, no-clobber)");
             continue;
+        }
 
         bool shouldOverwrite = overwriteMode is null;
         if (overwriteMode is not null)
@@ -342,7 +371,11 @@ foreach (int i in moveOrder)
         }
 
         if (!shouldOverwrite)
+        {
+            if (verbose)
+                Console.WriteLine($"{fromRel}: not moved (target exists, overwrite condition not met)");
             continue;
+        }
 
         File.Move(fromPath, toPath, overwrite: true);
         Console.WriteLine($"{fromRel} -> {toRel}");
@@ -377,6 +410,7 @@ static void ShowHelp()
     stdout.WriteLine("  -f, --files-only               Apply only to files (default).");
     stdout.WriteLine("  -d, --directories-only         Apply only to directories.");
     stdout.WriteLine("  -p, --create-parents           Create parent directories in the target if they do not exist.");
+    stdout.WriteLine("  -v, --verbose                  Print a line for every file found; if not moved, show the reason.");
     stdout.WriteLine("  -h, --help                     Show this help.");
     stdout.WriteLine();
     stdout.WriteLine("EXAMPLES");
