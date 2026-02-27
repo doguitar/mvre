@@ -45,7 +45,7 @@ jobs:
           dotnet publish "src/mvre.csproj" \
             -c ReleaseAot \
             -r "${{ matrix.rid }}" \
-            /p:ContinuousIntegrationBuild=true
+            -p:ContinuousIntegrationBuild=true
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
@@ -93,4 +93,3 @@ jobs:
             dist/**/mvre-*.zip
             dist/**/mvre-*.tar.gz
           generate_release_notes: true
-
